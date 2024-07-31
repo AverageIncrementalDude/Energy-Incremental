@@ -20,6 +20,7 @@
             border-radius: 10px;
             padding: 20px;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            position: relative;
         }
         h1 {
             color: #4ecca3;
@@ -103,10 +104,41 @@
             margin: 10px 0 5px;
             font-size: 0.9em;
         }
+        #resetButton {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background-color: #e94560;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 12px;
+        }
+        #resetButton:hover {
+            background-color: #d64161;
+        }
+        #resetConfirm {
+            position: absolute;
+            top: 40px;
+            left: 10px;
+            background-color: #0f3460;
+            color: #e0e0e0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            display: none;
+        }
     </style>
 </head>
 <body>
     <div class="game-container">
+        <button id="resetButton" onclick="initiateReset()">Reset Data</button>
+        <div id="resetConfirm">
+            Click <span id="resetCount">10</span> more times to confirm reset
+        </div>
         <h1>Energy Incremental Game</h1>
         <div class="stats">
             <div class="stat-item">Energy: <span id="energy" class="stat-value">0</span></div>
@@ -158,6 +190,8 @@
         };
 
         const INITIAL_COOLDOWN = 100; // 0.1 seconds in milliseconds
+        let resetClickCount = 0;
+        let resetTimeout;
 
         function formatNumber(num) {
             if (num < 1000000) return Math.floor(num).toLocaleString();
@@ -252,6 +286,43 @@
                 }
                 updateDisplay();
             }
+        }
+
+        function initiateReset() {
+            resetClickCount++;
+            if (resetClickCount === 1) {
+                document.getElementById('resetConfirm').style.display = 'block';
+            }
+            document.getElementById('resetCount').textContent = 10 - resetClickCount;
+            
+            if (resetClickCount >= 10) {
+                resetGame();
+            } else {
+                clearTimeout(resetTimeout);
+                resetTimeout = setTimeout(() => {
+                    resetClickCount = 0;
+                    document.getElementById('resetConfirm').style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        function resetGame() {
+            gameState = {
+                energy: 0,
+                energyPerClick: 1,
+                autoClickers: 0,
+                lastClickTime: 0,
+                energyUpgrades: 0,
+                autoClickerUpgrades: 0,
+                multiplierUpgrades: 0,
+                efficiencyUpgrades: 0,
+                clickTimes: [],
+                lastUpdateTime: Date.now()
+            };
+            resetClickCount = 0;
+            document.getElementById('resetConfirm').style.display = 'none';
+            updateDisplay();
+            saveGame();
         }
 
         setInterval(() => {
