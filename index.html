@@ -185,12 +185,7 @@
                 <h3>Improve Energy Efficiency</h3>
                 <p>Cost: <span id="efficiencyUpgradeCost">200</span> energy</p>
                 <button id="efficiencyUpgrade" onclick="buyUpgrade('efficiency')">Improve</button>
-                <button class="buy-max" onclick="buyMaxUpgrade('efficiency')">Buy Max</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
+                <button class="buy-max" onclick="buyMaxUpgrade('efficiency')">Buy Max</button><script>
         let gameState = {
             energy: 0,
             energyPerClick: 1,
@@ -209,11 +204,13 @@
         let resetTimeout;
 
         function formatNumber(num) {
+            if (typeof num !== 'number' || isNaN(num)) return '0';
             if (num < 1000000) return Math.floor(num).toLocaleString();
             const suffixes = ['M', 'B', 'T', 'Qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No'];
-            const e = Math.floor(Math.log10(num) / 3);
-            if (e < suffixes.length) {
-                return (num / Math.pow(10, e * 3)).toFixed(2) + suffixes[e - 1];
+            const e = Math.floor(Math.log10(Math.abs(num)) / 3);
+            if (e <= suffixes.length) {
+                const scaled = num / Math.pow(10, 3 * e);
+                return scaled.toFixed(2) + suffixes[e - 1];
             }
             return num.toExponential(2).replace('+', '');
         }
@@ -344,7 +341,6 @@
                 button.classList.add('affordable');
                 button.disabled = false;
             } else {
-                button.classList} else {
                 button.classList.remove('affordable');
                 button.disabled = true;
             }
@@ -400,7 +396,7 @@
         }
 
         function loadGame() {
-            const savedGame = localStorage.getItem('energyGame');
+            const savedGame = localStorage.setItem('energyGame');
             if (savedGame) {
                 const loadedState = JSON.parse(savedGame);
                 gameState = {
