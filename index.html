@@ -93,16 +93,27 @@
             padding: 10px 15px;
             border-radius: 3px;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
             width: 100%;
             margin-top: 10px;
         }
         .upgrade button:hover {
-            background-color: #d64161;
+            filter: brightness(1.1);
         }
-        .upgrade p {
-            margin: 10px 0 5px;
-            font-size: 0.9em;
+        .upgrade button.affordable {
+            background-color: #4ecca3;
+        }
+        .upgrade button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+        }
+        .upgrade .buy-max {
+            background-color: #f9c74f;
+            color: #1a1a2e;
+            margin-top: 5px;
+        }
+        .upgrade .buy-max:hover {
+            background-color: #f3b641;
         }
         #resetButton {
             position: absolute;
@@ -155,22 +166,26 @@
             <div class="upgrade">
                 <h3>Upgrade Energy Production</h3>
                 <p>Cost: <span id="energyUpgradeCost">10</span> energy</p>
-                <button onclick="buyUpgrade('energyPerClick')">Upgrade</button>
+                <button id="energyPerClickUpgrade" onclick="buyUpgrade('energyPerClick')">Upgrade</button>
+                <button class="buy-max" onclick="buyMaxUpgrade('energyPerClick')">Buy Max</button>
             </div>
             <div class="upgrade">
                 <h3>Buy Auto Clicker</h3>
                 <p>Cost: <span id="autoClickerCost">50</span> energy</p>
-                <button onclick="buyUpgrade('autoClicker')">Buy</button>
+                <button id="autoClickerUpgrade" onclick="buyUpgrade('autoClicker')">Buy</button>
+                <button class="buy-max" onclick="buyMaxUpgrade('autoClicker')">Buy Max</button>
             </div>
             <div class="upgrade">
                 <h3>Boost Energy Multiplier</h3>
                 <p>Cost: <span id="multiplierUpgradeCost">100</span> energy</p>
-                <button onclick="buyUpgrade('energyMultiplier')">Boost</button>
+                <button id="energyMultiplierUpgrade" onclick="buyUpgrade('energyMultiplier')">Boost</button>
+                <button class="buy-max" onclick="buyMaxUpgrade('energyMultiplier')">Buy Max</button>
             </div>
             <div class="upgrade">
                 <h3>Improve Energy Efficiency</h3>
                 <p>Cost: <span id="efficiencyUpgradeCost">200</span> energy</p>
-                <button onclick="buyUpgrade('efficiency')">Improve</button>
+                <button id="efficiencyUpgrade" onclick="buyUpgrade('efficiency')">Improve</button>
+                <button class="buy-max" onclick="buyMaxUpgrade('efficiency')">Buy Max</button>
             </div>
         </div>
     </div>
@@ -213,15 +228,16 @@
             document.getElementById('efficiencyUpgradeCost').textContent = formatNumber(getUpgradeCost('efficiency'));
             document.getElementById('energyPerSecond').textContent = formatNumber(calculateEPS());
             document.getElementById('energyMultiplier').textContent = 'x' + getEnergyMultiplier().toFixed(2);
-            document.getElementById('clickCooldown').textContent = (INITIAL_COOLDOWN * Math.pow(0.9, gameState.efficiencyUpgrades)).toFixed(2) + 'ms';
+            document.getElementById('clickCooldown').textContent = (getCurrentCooldown()).toFixed(2) + 'ms';
+            updateButtonAffordability();
         }
 
         function getEnergyMultiplier() {
-            return Math.pow(1.2, gameState.multiplierUpgrades);
+            return Math.pow(1.15, gameState.multiplierUpgrades);
         }
 
         function getCurrentCooldown() {
-            return INITIAL_COOLDOWN * Math.pow(0.9, gameState.efficiencyUpgrades);
+            return INITIAL_COOLDOWN * Math.pow(0.95, gameState.efficiencyUpgrades);
         }
 
         function energize() {
@@ -252,13 +268,28 @@
         function getUpgradeCost(type) {
             switch(type) {
                 case 'energyPerClick':
-                    return Math.floor(10 * Math.pow(1.5, gameState.energyUpgrades || 0));
+                    return Math.floor(10 * Math.pow(1.4, gameState.energyUpgrades));
                 case 'autoClicker':
-                    return Math.floor(50 * Math.pow(1.8, gameState.autoClickerUpgrades || 0));
+                    return Math.floor(50 * Math.pow(1.6, gameState.autoClickerUpgrades));
                 case 'energyMultiplier':
-                    return Math.floor(100 * Math.pow(2, gameState.multiplierUpgrades || 0));
+                    return Math.floor(100 * Math.pow(1.8, gameState.multiplierUpgrades));
                 case 'efficiency':
-                    return Math.floor(200 * Math.pow(2.5, gameState.efficiencyUpgrades || 0));
+                    return Math.floor(200 * Math.pow(2, gameState.efficiencyUpgrades));
+                default:
+                    return 0;
+            }
+        }
+
+        function getUpgradeEffect(type) {
+            switch(type) {
+                case 'energyPerClick':
+                    return 0.2 * (gameState.energyUpgrades + 1);
+                case 'autoClicker':
+                    return 1;
+                case 'energyMultiplier':
+                    return Math.pow(1.15, gameState.multiplierUpgrades + 1) - Math.pow(1.15, gameState.multiplierUpgrades);
+                case 'efficiency':
+                    return INITIAL_COOLDOWN * (Math.pow(0.95, gameState.efficiencyUpgrades) - Math.pow(0.95, gameState.efficiencyUpgrades + 1));
                 default:
                     return 0;
             }
@@ -270,7 +301,7 @@
                 gameState.energy -= cost;
                 switch(type) {
                     case 'energyPerClick':
-                        gameState.energyPerClick += 0.2 * (gameState.energyUpgrades + 1);
+                        gameState.energyPerClick += getUpgradeEffect('energyPerClick');
                         gameState.energyUpgrades++;
                         break;
                     case 'autoClicker':
@@ -285,6 +316,37 @@
                         break;
                 }
                 updateDisplay();
+            }
+        }
+
+        function buyMaxUpgrade(type) {
+            let bought = 0;
+            while (gameState.energy >= getUpgradeCost(type)) {
+                buyUpgrade(type);
+                bought++;
+            }
+            if (bought > 0) {
+                updateDisplay();
+            }
+        }
+
+        function updateButtonAffordability() {
+            updateButtonState('energyPerClick', 'energyPerClickUpgrade');
+            updateButtonState('autoClicker', 'autoClickerUpgrade');
+            updateButtonState('energyMultiplier', 'energyMultiplierUpgrade');
+            updateButtonState('efficiency', 'efficiencyUpgrade');
+        }
+
+        function updateButtonState(upgradeType, buttonId) {
+            const button = document.getElementById(buttonId);
+            const cost = getUpgradeCost(upgradeType);
+            if (gameState.energy >= cost) {
+                button.classList.add('affordable');
+                button.disabled = false;
+            } else {
+                button.classList} else {
+                button.classList.remove('affordable');
+                button.disabled = true;
             }
         }
 
