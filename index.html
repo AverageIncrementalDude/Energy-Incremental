@@ -5,13 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Energy Supercharge Incremental</title>
     <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap');
+        
         :root {
-            --main-bg-color: #0f0f23;
-            --secondary-bg-color: #1a1a3a;
-            --accent-color: #00ff00;
+            --main-bg-color: #0a0a2a;
+            --secondary-bg-color: #1a1a4a;
+            --accent-color: #00ffff;
             --text-color: #ffffff;
             --button-color: #4a4a8f;
             --button-hover-color: #6a6abf;
+            --supercharge-color: #ffd700;
         }
         body {
             font-family: 'Roboto', sans-serif;
@@ -20,16 +23,19 @@
             margin: 0;
             padding: 0;
             overflow-x: hidden;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(5, 5, 50, 0.4) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(5, 5, 50, 0.4) 0%, transparent 50%);
         }
         .container {
             display: flex;
             min-height: 100vh;
         }
         .sidebar {
-            width: 200px;
+            width: 220px;
             background-color: var(--secondary-bg-color);
             padding: 20px;
-            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            box-shadow: 2px 0 10px rgba(0,0,0,0.5);
         }
         .main-content {
             flex-grow: 1;
@@ -39,22 +45,24 @@
         .tab-button {
             display: block;
             width: 100%;
-            padding: 10px;
-            margin-bottom: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
             background-color: var(--button-color);
             color: var(--text-color);
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s;
             font-size: 16px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
         .tab-button:hover, .tab-button.active {
             background-color: var(--button-hover-color);
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            box-shadow: 0 6px 10px rgba(0,0,0,0.2);
         }
         .tab-content {
             display: none;
@@ -69,10 +77,11 @@
         }
         .stat-container {
             background-color: var(--secondary-bg-color);
-            border-radius: 10px;
+            border-radius: 15px;
             padding: 20px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
+            border: 1px solid var(--accent-color);
         }
         .upgrade-container {
             display: grid;
@@ -85,6 +94,7 @@
             padding: 15px;
             transition: all 0.3s;
             box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border: 1px solid var(--accent-color);
         }
         .upgrade-item:hover {
             transform: translateY(-5px);
@@ -102,6 +112,7 @@
             font-size: 14px;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-family: 'Orbitron', sans-serif;
         }
         .upgrade-button:hover:not(:disabled) {
             background-color: var(--button-hover-color);
@@ -125,7 +136,7 @@
         #superchargeButton {
             font-size: 20px;
             padding: 12px 24px;
-            background-color: #ffd700;
+            background-color: var(--supercharge-color);
             color: var(--main-bg-color);
         }
         #superchargeButton:hover:not(:disabled) {
@@ -177,6 +188,11 @@
         .tooltip:hover .tooltiptext {
             visibility: visible;
             opacity: 1;
+        }
+        #energyDisplay, #energyPerClickDisplay, #energyPerSecondDisplay {
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--accent-color);
         }
     </style>
 </head>
@@ -276,7 +292,7 @@
             basicAutoClicker: {
                 name: "Basic Auto Clicker",
                 description: "Generate energy automatically",
-                cost: 50,
+                cost: 100,
                 costIncrease: 1.2,
                 effect: 1,
                 quantity: 0,
@@ -289,11 +305,11 @@
             advancedMultiplier: {
                 name: "Advanced Multiplier",
                 description: "Multiply all energy gain",
-                cost: 1000,
-                costIncrease: 2,
-                effect: 0.1,
+                cost: 1e6,
+                costIncrease: 10,
+                effect: 2,
                 quantity: 0,
-                maxQuantity: 10,
+                maxQuantity: Infinity,
                 type: "advanced",
                 onPurchase: (upgrade) => {
                     // The effect of this upgrade is applied in the energy calculation
@@ -302,11 +318,11 @@
             energyCapacitor: {
                 name: "Energy Capacitor",
                 description: "Increases energy storage capacity",
-                cost: 5000,
-                costIncrease: 2.5,
-                effect: 0.1,
+                cost: 1e9,
+                costIncrease: 100,
+                effect: 10,
                 quantity: 0,
-                maxQuantity: 10,
+                maxQuantity: Infinity,
                 type: "advanced",
                 onPurchase: (upgrade) => {
                     // Effect applied in energy calculation
@@ -315,11 +331,11 @@
             quantumFluctuation: {
                 name: "Quantum Fluctuation",
                 description: "Chance to get bonus energy on click",
-                cost: 10000,
-                costIncrease: 3,
+                cost: 1e12,
+                costIncrease: 1000,
                 effect: 0.01,
                 quantity: 0,
-                maxQuantity: 10,
+                maxQuantity: 100,
                 type: "advanced",
                 onPurchase: (upgrade) => {
                     // Effect applied in energize function
@@ -356,7 +372,8 @@
         // Achievements
         const achievements = {
             energyNovice: {name: "Energy Novice", description: "Reach 1,000 energy", condition: () => gameState.energy >= 1000},
-            energyAdept: {name: "Energy Adept", description: "Reach 1,000,000 energy", condition: () => gameState.energy >= 1000000},
+            energyAdept: {name: "Energy Adept", description: "Reach 1,000,000 energy", condition: () => gameState.energy >= 1e6},
+            energyMaster: {name: "Energy Master", description: "Reach 1e12 energy", condition: () => gameState.energy >= 1e12},
             clickMaster: {name: "Click Master", description: "Click 1,000 times", condition: () => gameState.statistics.totalClicks >= 1000},
             superchargePioneer: {name: "Supercharge Pioneer", description: "Perform your first Supercharge", condition: () => gameState.statistics.totalSupercharges > 0},
         };
@@ -365,52 +382,55 @@
         function formatNumber(num) {
             if (typeof num !== 'number' || isNaN(num)) return '0';
             
-            const suffixes = ['', 'K', 'M', 'B', 'T', 'Qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No'];
-            const log = Math.floor(Math.log10(Math.abs(num)));
-            const suffixIndex = Math.floor(log / 3);
+            if (num < 1e6) return num.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
             
-            if (suffixIndex === 0) return num.toFixed(0);
+            const suffixes = ['M', 'B', 'T', 'Qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No'];const exp = Math.floor(Math.log10(num) / 3);
             
-            const scaled = num / Math.pow(10, suffixIndex * 3);
-            
-            if (suffixIndex >= suffixes.length) {
+            if (exp < suffixes.length) {
+                const scaled = num / Math.pow(10, exp * 3);
+                return scaled.toFixed(2) + suffixes[exp - 2];
+            } else {
                 return num.toExponential(2).replace('+', '');
             }
-            
-            return scaled.toFixed(2) + suffixes[suffixIndex];
         }
 
         function calculateEnergy(delta) {
-            const multiplier = 1 + (upgrades.advancedMultiplier.quantity * upgrades.advancedMultiplier.effect);
+            const multiplier = Math.pow(2, upgrades.advancedMultiplier.quantity);
             const superchargeBoost = 1 + (gameState.superchargePoints * upgrades.superchargeBoost.quantity * upgrades.superchargeBoost.effect);
-            const capacitorBoost = 1 + (upgrades.energyCapacitor.quantity * upgrades.energyCapacitor.effect);
+            const capacitorBoost = Math.pow(10, upgrades.energyCapacitor.quantity);
             return (gameState.energyPerSecond * delta / 1000) * multiplier * superchargeBoost * capacitorBoost;
         }
 
         function updateDisplay() {
             document.getElementById('energyDisplay').textContent = formatNumber(gameState.energy);
-            document.getElementById('energyPerClickDisplay').textContent = formatNumber(gameState.energyPerClick);document.getElementById('energyPerSecondDisplay').textContent = formatNumber(gameState.energyPerSecond);
+            document.getElementById('energyPerClickDisplay').textContent = formatNumber(gameState.energyPerClick);
+            document.getElementById('energyPerSecondDisplay').textContent = formatNumber(gameState.energyPerSecond);
             document.getElementById('superchargePointsDisplay').textContent = formatNumber(gameState.superchargePoints);
 
             // Update upgrade buttons
             for (const [key, upgrade] of Object.entries(upgrades)) {
                 const button = document.getElementById(`upgrade-${key}`);
                 if (button) {
-                    button.disabled = gameState.energy < upgrade.cost || upgrade.quantity >= upgrade.maxQuantity;
-                    button.classList.toggle('affordable', gameState.energy >= upgrade.cost);
+                    if (upgrade.type === 'supercharge') {
+                        button.disabled = gameState.superchargePoints < upgrade.cost;
+                        button.classList.toggle('affordable', gameState.superchargePoints >= upgrade.cost);
+                    } else {
+                        button.disabled = gameState.energy < upgrade.cost;
+                        button.classList.toggle('affordable', gameState.energy >= upgrade.cost);
+                    }
                     button.textContent = `${upgrade.name} (${formatNumber(upgrade.cost)})`;
                 }
             }
 
             // Show/hide Supercharge tab
             const superchargeTabButton = document.getElementById('superchargeTabButton');
-            if (gameState.energy >= 100000 && superchargeTabButton.style.display === 'none') {
+            if (gameState.energy >= 1e15 && superchargeTabButton.style.display === 'none') {
                 superchargeTabButton.style.display = 'block';
             }
 
             // Enable/disable Supercharge button
             const superchargeButton = document.getElementById('superchargeButton');
-            superchargeButton.disabled = gameState.energy < 1000000;
+            superchargeButton.disabled = gameState.energy < 1e18;
 
             updateStatisticsDisplay();
         }
@@ -464,20 +484,30 @@
 
         function purchaseUpgrade(key) {
             const upgrade = upgrades[key];
-            if (gameState.energy >= upgrade.cost && upgrade.quantity < upgrade.maxQuantity) {
-                gameState.energy -= upgrade.cost;
-                upgrade.quantity++;
-                upgrade.cost = Math.floor(upgrade.cost * upgrade.costIncrease);
-                upgrade.onPurchase(upgrade);
-                updateDisplay();
+            if (upgrade.type === 'supercharge') {
+                if (gameState.superchargePoints >= upgrade.cost) {
+                    gameState.superchargePoints -= upgrade.cost;
+                    upgrade.quantity++;
+                    upgrade.cost = Math.floor(upgrade.cost * upgrade.costIncrease);
+                    upgrade.onPurchase(upgrade);
+                    updateDisplay();
+                }
+            } else {
+                if (gameState.energy >= upgrade.cost) {
+                    gameState.energy -= upgrade.cost;
+                    upgrade.quantity++;
+                    upgrade.cost = Math.floor(upgrade.cost * upgrade.costIncrease);
+                    upgrade.onPurchase(upgrade);
+                    updateDisplay();
+                }
             }
         }
 
         function energize() {
             let energyGain = gameState.energyPerClick;
             if (Math.random() < upgrades.quantumFluctuation.quantity * upgrades.quantumFluctuation.effect) {
-                energyGain *= 2;
-                showNotification("Quantum Fluctuation: Double energy gain!");
+                energyGain *= 1000;
+                showNotification("Quantum Fluctuation: 1000x energy gain!");
             }
             gameState.energy += energyGain;
             gameState.statistics.totalEnergy += energyGain;
@@ -487,9 +517,9 @@
         }
 
         function supercharge() {
-            if (gameState.energy >= 1000000) {
+            if (gameState.energy >= 1e18) {
                 const efficiencyBonus = 1 + (upgrades.superchargeEfficiency.quantity * upgrades.superchargeEfficiency.effect);
-                const newPoints = Math.floor((Math.log10(gameState.energy) - 5) * efficiencyBonus);
+                const newPoints = Math.floor((Math.log10(gameState.energy) - 17) * efficiencyBonus);
                 gameState.superchargePoints += newPoints;
                 gameState.statistics.totalSupercharges++;
                 showNotification(`Supercharged! Gained ${formatNumber(newPoints)} Supercharge points.`);
