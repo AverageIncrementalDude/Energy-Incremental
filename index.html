@@ -3,416 +3,670 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Energy Incremental Game</title>
+    <title>Energy Supercharge Incremental</title>
     <style>
-        body { 
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center; 
-            background-color: #1a1a2e;
-            color: #e0e0e0;
-            margin: 0;
-            padding: 20px;
+        :root {
+            --main-bg-color: #0f0f23;
+            --secondary-bg-color: #1a1a3a;
+            --accent-color: #00ff00;
+            --text-color: #ffffff;
+            --button-color: #4a4a8f;
+            --button-hover-color: #6a6abf;
         }
-        .game-container {
-            max-width: 800px;
-            margin: 0 auto;
-            background-color: #16213e;
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--main-bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+        }
+        .container {
+            display: flex;
+            min-height: 100vh;
+        }
+        .sidebar {
+            width: 200px;
+            background-color: var(--secondary-bg-color);
+            padding: 20px;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+        .main-content {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        .tab-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: var(--button-color);
+            color: var(--text-color);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .tab-button:hover, .tab-button.active {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .stat-container {
+            background-color: var(--secondary-bg-color);
             border-radius: 10px;
             padding: 20px;
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
-            position: relative;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        h1 {
-            color: #4ecca3;
-            margin-bottom: 30px;
-        }
-        .stats {
-            background-color: #0f3460;
-            border-radius: 5px;
-            padding: 15px;
-            margin: 20px auto;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        .upgrade-container {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 10px;
-        }
-        .stat-item {
-            text-align: left;
-            padding: 5px;
-            border-bottom: 1px solid #4ecca3;
-        }
-        .stat-value {
-            float: right;
-            font-weight: bold;
-            color: #4ecca3;
-        }
-        #energizeButton {
-            background-color: #4ecca3;
-            border: none;
-            color: #1a1a2e;
-            padding: 15px 32px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 18px;
-            margin: 20px 0;
-            cursor: pointer;
-            transition: all 0.3s;
-            border-radius: 5px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-        }
-        #energizeButton:hover {
-            background-color: #45b393;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
-        }
-        #energizeButton:active {
-            transform: translateY(1px);
-            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.1);
-        }
-        .upgrades {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
             gap: 20px;
-            margin-top: 30px;
         }
-        .upgrade {
-            background-color: #0f3460;
+        .upgrade-item {
+            background-color: var(--secondary-bg-color);
+            border-radius: 10px;
             padding: 15px;
-            border-radius: 5px;
             transition: all 0.3s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
         }
-        .upgrade:hover {
+        .upgrade-item:hover {
             transform: translateY(-5px);
-            box-shadow: 0 5px 15px rgba(78, 204, 163, 0.2);
+            box-shadow: 0 6px 12px rgba(0,0,0,0.2);
         }
-        .upgrade button {
-            background-color: #e94560;
-            color: white;
+        .upgrade-button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--button-color);
+            color: var(--text-color);
             border: none;
-            padding: 10px 15px;
-            border-radius: 3px;
+            border-radius: 5px;
             cursor: pointer;
             transition: all 0.3s;
-            width: 100%;
-            margin-top: 10px;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
         }
-        .upgrade button:hover {
-            filter: brightness(1.1);
+        .upgrade-button:hover:not(:disabled) {
+            background-color: var(--button-hover-color);
+            transform: translateY(-2px);
         }
-        .upgrade button.affordable {
-            background-color: #4ecca3;
-        }
-        .upgrade button:disabled {
-            background-color: #cccccc;
+        .upgrade-button:disabled {
+            opacity: 0.5;
             cursor: not-allowed;
         }
-        .upgrade .buy-max {
-            background-color: #f9c74f;
-            color: #1a1a2e;
-            margin-top: 5px;
+        .upgrade-button.affordable {
+            background-color: var(--accent-color);
+            color: var(--main-bg-color);
         }
-        .upgrade .buy-max:hover {
-            background-color: #f3b641;
+        #energizeButton {
+            font-size: 24px;
+            padding: 15px 30px;
+            margin-bottom: 20px;
+            background-color: var(--accent-color);
+            color: var(--main-bg-color);
         }
-        #resetButton {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #e94560;
-            color: white;
-            border: none;
-            padding: 5px 10px;
-            border-radius: 3px;
-            cursor: pointer;
-            transition: all 0.3s;
-            font-size: 12px;
+        #superchargeButton {
+            font-size: 20px;
+            padding: 12px 24px;
+            background-color: #ffd700;
+            color: var(--main-bg-color);
         }
-        #resetButton:hover {
-            background-color: #d64161;
+        #superchargeButton:hover:not(:disabled) {
+            background-color: #ffc600;
         }
-        #resetConfirm {
-            position: absolute;
-            top: 40px;
-            left: 10px;
-            background-color: #0f3460;
-            color: #e0e0e0;
-            padding: 10px;
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: var(--accent-color);
+            color: var(--main-bg-color);
+            padding: 10px 20px;
             border-radius: 5px;
-            font-size: 12px;
-            display: none;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        .achievement {
+            background-color: var(--secondary-bg-color);
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .achievement.unlocked {
+            background-color: var(--accent-color);
+            color: var(--main-bg-color);
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 200px;
+            background-color: #555;
+            color: #fff;
+            text-align: center;
+            border-radius: 6px;
+            padding: 5px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
         }
     </style>
 </head>
 <body>
-    <div class="game-container">
-        <button id="resetButton" onclick="initiateReset()">Reset Data</button>
-        <div id="resetConfirm">
-            Click <span id="resetCount">10</span> more times to confirm reset
+    <div class="container">
+        <div class="sidebar">
+            <button class="tab-button active" data-tab="main">Main</button>
+            <button class="tab-button" data-tab="upgrades">Upgrades</button>
+            <button class="tab-button" data-tab="supercharge" id="superchargeTabButton" style="display: none;">Supercharge</button>
+            <button class="tab-button" data-tab="statistics">Statistics</button>
+            <button class="tab-button" data-tab="achievements">Achievements</button>
+            <button class="tab-button" data-tab="options">Options</button>
         </div>
-        <h1>Energy Incremental Game</h1>
-        <div class="stats">
-            <div class="stat-item">Energy: <span id="energy" class="stat-value">0</span></div>
-            <div class="stat-item">Energy per Click: <span id="energyPerClick" class="stat-value">1</span></div>
-            <div class="stat-item">Auto Clickers: <span id="autoClickers" class="stat-value">0</span></div>
-            <div class="stat-item">Energy Per Second: <span id="energyPerSecond" class="stat-value">0</span></div>
-            <div class="stat-item">Energy Multiplier: <span id="energyMultiplier" class="stat-value">x1</span></div>
-            <div class="stat-item">Click Cooldown: <span id="clickCooldown" class="stat-value">100ms</span></div>
+        <div class="main-content">
+            <div id="mainTab" class="tab-content active">
+                <div class="stat-container">
+                    <h2>Energy: <span id="energyDisplay">0</span></h2>
+                    <h3>Energy per click: <span id="energyPerClickDisplay">1</span></h3>
+                    <h3>Energy per second: <span id="energyPerSecondDisplay">0</span></h3>
+                </div>
+                <button id="energizeButton" class="upgrade-button">Energize!</button>
+                <div class="upgrade-container" id="basicUpgrades">
+                    <!-- Basic upgrades will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="upgradesTab" class="tab-content">
+                <h2>Advanced Upgrades</h2>
+                <div class="upgrade-container" id="advancedUpgrades">
+                    <!-- Advanced upgrades will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="superchargeTab" class="tab-content">
+                <h2>Supercharge</h2>
+                <p>Reset your progress for powerful boosts!</p>
+                <p>Current Supercharge points: <span id="superchargePointsDisplay">0</span></p>
+                <button id="superchargeButton" class="upgrade-button" disabled>Supercharge</button>
+                <div class="upgrade-container" id="superchargeUpgrades">
+                    <!-- Supercharge upgrades will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="statisticsTab" class="tab-content">
+                <h2>Statistics</h2>
+                <div id="statisticsContainer">
+                    <!-- Statistics will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="achievementsTab" class="tab-content">
+                <h2>Achievements</h2>
+                <div id="achievementsContainer">
+                    <!-- Achievements will be dynamically inserted here -->
+                </div>
+            </div>
+            <div id="optionsTab" class="tab-content">
+                <h2>Options</h2>
+                <div id="optionsContainer">
+                    <button id="resetButton" class="upgrade-button">Reset Game</button>
+                    <button id="exportSaveButton" class="upgrade-button">Export Save</button>
+                    <button id="importSaveButton" class="upgrade-button">Import Save</button>
+                </div>
+            </div>
         </div>
-        
-        <button id="energizeButton" onclick="energize()">Energize!</button>
-        
-        <div class="upgrades">
-            <div class="upgrade">
-                <h3>Upgrade Energy Production</h3>
-                <p>Cost: <span id="energyUpgradeCost">10</span> energy</p>
-                <button id="energyPerClickUpgrade" onclick="buyUpgrade('energyPerClick')">Upgrade</button>
-                <button class="buy-max" onclick="buyMaxUpgrade('energyPerClick')">Buy Max</button>
-            </div>
-            <div class="upgrade">
-                <h3>Buy Auto Clicker</h3>
-                <p>Cost: <span id="autoClickerCost">50</span> energy</p>
-                <button id="autoClickerUpgrade" onclick="buyUpgrade('autoClicker')">Buy</button>
-                <button class="buy-max" onclick="buyMaxUpgrade('autoClicker')">Buy Max</button>
-            </div>
-            <div class="upgrade">
-                <h3>Boost Energy Multiplier</h3>
-                <p>Cost: <span id="multiplierUpgradeCost">100</span> energy</p>
-                <button id="energyMultiplierUpgrade" onclick="buyUpgrade('energyMultiplier')">Boost</button>
-                <button class="buy-max" onclick="buyMaxUpgrade('energyMultiplier')">Buy Max</button>
-            </div>
-            <div class="upgrade">
-                <h3>Improve Energy Efficiency</h3>
-                <p>Cost: <span id="efficiencyUpgradeCost">200</span> energy</p>
-                <button id="efficiencyUpgrade" onclick="buyUpgrade('efficiency')">Improve</button>
-                <button class="buy-max" onclick="buyMaxUpgrade('efficiency')">Buy Max</button><script>
+    </div>
+    <div id="notification" class="notification"></div>
+    <script>
+        // Game state
         let gameState = {
             energy: 0,
             energyPerClick: 1,
-            autoClickers: 0,
-            lastClickTime: 0,
-            energyUpgrades: 0,
-            autoClickerUpgrades: 0,
-            multiplierUpgrades: 0,
-            efficiencyUpgrades: 0,
-            clickTimes: [],
-            lastUpdateTime: Date.now()
+            energyPerSecond: 0,
+            superchargePoints: 0,
+            upgrades: {},
+            statistics: {
+                totalEnergy: 0,
+                totalClicks: 0,
+                totalSupercharges: 0,
+                playTime: 0
+            },
+            achievements: {},
+            lastUpdate: Date.now()
         };
 
-        const INITIAL_COOLDOWN = 100; // 0.1 seconds in milliseconds
-        let resetClickCount = 0;
-        let resetTimeout;
+        // Upgrade definitions
+        const upgrades = {
+            basicClickPower: {
+                name: "Basic Click Power",
+                description: "Increase energy per click",
+                cost: 10,
+                costIncrease: 1.15,
+                effect: 1,
+                quantity: 0,
+                maxQuantity: Infinity,
+                type: "basic",
+                onPurchase: (upgrade) => {
+                    gameState.energyPerClick += upgrade.effect;
+                }
+            },
+            basicAutoClicker: {
+                name: "Basic Auto Clicker",
+                description: "Generate energy automatically",
+                cost: 50,
+                costIncrease: 1.2,
+                effect: 1,
+                quantity: 0,
+                maxQuantity: Infinity,
+                type: "basic",
+                onPurchase: (upgrade) => {
+                    gameState.energyPerSecond += upgrade.effect;
+                }
+            },
+            advancedMultiplier: {
+                name: "Advanced Multiplier",
+                description: "Multiply all energy gain",
+                cost: 1000,
+                costIncrease: 2,
+                effect: 0.1,
+                quantity: 0,
+                maxQuantity: 10,
+                type: "advanced",
+                onPurchase: (upgrade) => {
+                    // The effect of this upgrade is applied in the energy calculation
+                }
+            },
+            energyCapacitor: {
+                name: "Energy Capacitor",
+                description: "Increases energy storage capacity",
+                cost: 5000,
+                costIncrease: 2.5,
+                effect: 0.1,
+                quantity: 0,
+                maxQuantity: 10,
+                type: "advanced",
+                onPurchase: (upgrade) => {
+                    // Effect applied in energy calculation
+                }
+            },
+            quantumFluctuation: {
+                name: "Quantum Fluctuation",
+                description: "Chance to get bonus energy on click",
+                cost: 10000,
+                costIncrease: 3,
+                effect: 0.01,
+                quantity: 0,
+                maxQuantity: 10,
+                type: "advanced",
+                onPurchase: (upgrade) => {
+                    // Effect applied in energize function
+                }
+            },
+            superchargeBoost: {
+                name: "Supercharge Boost",
+                description: "Boost energy gain based on Supercharge points",
+                cost: 1,
+                costIncrease: 2,
+                effect: 0.1,
+                quantity: 0,
+                maxQuantity: Infinity,
+                type: "supercharge",
+                onPurchase: (upgrade) => {
+                    // The effect of this upgrade is applied in the energy calculation
+                }
+            },
+            superchargeEfficiency: {
+                name: "Supercharge Efficiency",
+                description: "Increases Supercharge point gain",
+                cost: 5,
+                costIncrease: 2,
+                effect: 0.1,
+                quantity: 0,
+                maxQuantity: Infinity,
+                type: "supercharge",
+                onPurchase: (upgrade) => {
+                    // Effect applied in supercharge function
+                }
+            }
+        };
 
+        // Achievements
+        const achievements = {
+            energyNovice: {name: "Energy Novice", description: "Reach 1,000 energy", condition: () => gameState.energy >= 1000},
+            energyAdept: {name: "Energy Adept", description: "Reach 1,000,000 energy", condition: () => gameState.energy >= 1000000},
+            clickMaster: {name: "Click Master", description: "Click 1,000 times", condition: () => gameState.statistics.totalClicks >= 1000},
+            superchargePioneer: {name: "Supercharge Pioneer", description: "Perform your first Supercharge", condition: () => gameState.statistics.totalSupercharges > 0},
+        };
+
+        // Helper functions
         function formatNumber(num) {
             if (typeof num !== 'number' || isNaN(num)) return '0';
-            if (num < 1000000) return Math.floor(num).toLocaleString();
-            const suffixes = ['M', 'B', 'T', 'Qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No'];
-            const e = Math.floor(Math.log10(Math.abs(num)) / 3);
-            if (e <= suffixes.length) {
-                const scaled = num / Math.pow(10, 3 * e);
-                return scaled.toFixed(2) + suffixes[e - 1];
+            
+            const suffixes = ['', 'K', 'M', 'B', 'T', 'Qd', 'Qn', 'Sx', 'Sp', 'Oc', 'No'];
+            const log = Math.floor(Math.log10(Math.abs(num)));
+            const suffixIndex = Math.floor(log / 3);
+            
+            if (suffixIndex === 0) return num.toFixed(0);
+            
+            const scaled = num / Math.pow(10, suffixIndex * 3);
+            
+            if (suffixIndex >= suffixes.length) {
+                return num.toExponential(2).replace('+', '');
             }
-            return num.toExponential(2).replace('+', '');
+            
+            return scaled.toFixed(2) + suffixes[suffixIndex];
+        }
+
+        function calculateEnergy(delta) {
+            const multiplier = 1 + (upgrades.advancedMultiplier.quantity * upgrades.advancedMultiplier.effect);
+            const superchargeBoost = 1 + (gameState.superchargePoints * upgrades.superchargeBoost.quantity * upgrades.superchargeBoost.effect);
+            const capacitorBoost = 1 + (upgrades.energyCapacitor.quantity * upgrades.energyCapacitor.effect);
+            return (gameState.energyPerSecond * delta / 1000) * multiplier * superchargeBoost * capacitorBoost;
         }
 
         function updateDisplay() {
-            document.getElementById('energy').textContent = formatNumber(gameState.energy);
-            document.getElementById('energyPerClick').textContent = formatNumber(gameState.energyPerClick * getEnergyMultiplier());
-            document.getElementById('autoClickers').textContent = gameState.autoClickers;
-            document.getElementById('energyUpgradeCost').textContent = formatNumber(getUpgradeCost('energyPerClick'));
-            document.getElementById('autoClickerCost').textContent = formatNumber(getUpgradeCost('autoClicker'));
-            document.getElementById('multiplierUpgradeCost').textContent = formatNumber(getUpgradeCost('energyMultiplier'));
-            document.getElementById('efficiencyUpgradeCost').textContent = formatNumber(getUpgradeCost('efficiency'));
-            document.getElementById('energyPerSecond').textContent = formatNumber(calculateEPS());
-            document.getElementById('energyMultiplier').textContent = 'x' + getEnergyMultiplier().toFixed(2);
-            document.getElementById('clickCooldown').textContent = (getCurrentCooldown()).toFixed(2) + 'ms';
-            updateButtonAffordability();
+            document.getElementById('energyDisplay').textContent = formatNumber(gameState.energy);
+            document.getElementById('energyPerClickDisplay').textContent = formatNumber(gameState.energyPerClick);document.getElementById('energyPerSecondDisplay').textContent = formatNumber(gameState.energyPerSecond);
+            document.getElementById('superchargePointsDisplay').textContent = formatNumber(gameState.superchargePoints);
+
+            // Update upgrade buttons
+            for (const [key, upgrade] of Object.entries(upgrades)) {
+                const button = document.getElementById(`upgrade-${key}`);
+                if (button) {
+                    button.disabled = gameState.energy < upgrade.cost || upgrade.quantity >= upgrade.maxQuantity;
+                    button.classList.toggle('affordable', gameState.energy >= upgrade.cost);
+                    button.textContent = `${upgrade.name} (${formatNumber(upgrade.cost)})`;
+                }
+            }
+
+            // Show/hide Supercharge tab
+            const superchargeTabButton = document.getElementById('superchargeTabButton');
+            if (gameState.energy >= 100000 && superchargeTabButton.style.display === 'none') {
+                superchargeTabButton.style.display = 'block';
+            }
+
+            // Enable/disable Supercharge button
+            const superchargeButton = document.getElementById('superchargeButton');
+            superchargeButton.disabled = gameState.energy < 1000000;
+
+            updateStatisticsDisplay();
         }
 
-        function getEnergyMultiplier() {
-            return Math.pow(1.15, gameState.multiplierUpgrades);
+        function updateStatisticsDisplay() {
+            const container = document.getElementById('statisticsContainer');
+            container.innerHTML = `
+                <p>Total Energy Produced: ${formatNumber(gameState.statistics.totalEnergy)}</p>
+                <p>Total Clicks: ${formatNumber(gameState.statistics.totalClicks)}</p>
+                <p>Total Supercharges: ${formatNumber(gameState.statistics.totalSupercharges)}</p>
+                <p>Play Time: ${formatTime(gameState.statistics.playTime)}</p>
+            `;
         }
 
-        function getCurrentCooldown() {
-            return INITIAL_COOLDOWN * Math.pow(0.95, gameState.efficiencyUpgrades);
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${hours}h ${minutes}m ${secs}s`;
+        }
+
+        function createUpgradeButton(key, upgrade) {
+            const button = document.createElement('button');
+            button.id = `upgrade-${key}`;
+            button.className = 'upgrade-button';
+            button.onclick = () => purchaseUpgrade(key);
+            button.textContent = `${upgrade.name} (${formatNumber(upgrade.cost)})`;
+            return button;
+        }
+
+        function initializeUpgrades() {
+            const basicContainer = document.getElementById('basicUpgrades');
+            const advancedContainer = document.getElementById('advancedUpgrades');
+            const superchargeContainer = document.getElementById('superchargeUpgrades');
+
+            for (const [key, upgrade] of Object.entries(upgrades)) {
+                const button = createUpgradeButton(key, upgrade);
+                switch (upgrade.type) {
+                    case 'basic':
+                        basicContainer.appendChild(button);
+                        break;
+                    case 'advanced':
+                        advancedContainer.appendChild(button);
+                        break;
+                    case 'supercharge':
+                        superchargeContainer.appendChild(button);
+                        break;
+                }
+            }
+        }
+
+        function purchaseUpgrade(key) {
+            const upgrade = upgrades[key];
+            if (gameState.energy >= upgrade.cost && upgrade.quantity < upgrade.maxQuantity) {
+                gameState.energy -= upgrade.cost;
+                upgrade.quantity++;
+                upgrade.cost = Math.floor(upgrade.cost * upgrade.costIncrease);
+                upgrade.onPurchase(upgrade);
+                updateDisplay();
+            }
         }
 
         function energize() {
-            const currentTime = Date.now();
-            if (currentTime - gameState.lastClickTime >= getCurrentCooldown()) {
-                gameState.energy += gameState.energyPerClick * getEnergyMultiplier();
-                gameState.lastClickTime = currentTime;
-                gameState.clickTimes.push(currentTime);
-                if (gameState.clickTimes.length > 10) {
-                    gameState.clickTimes.shift();
-                }
-                updateDisplay();
+            let energyGain = gameState.energyPerClick;
+            if (Math.random() < upgrades.quantumFluctuation.quantity * upgrades.quantumFluctuation.effect) {
+                energyGain *= 2;
+                showNotification("Quantum Fluctuation: Double energy gain!");
             }
+            gameState.energy += energyGain;
+            gameState.statistics.totalEnergy += energyGain;
+            gameState.statistics.totalClicks++;
+            updateDisplay();
+            checkAchievements();
         }
 
-        function calculateEPS() {
-            const multiplier = getEnergyMultiplier();
-            const autoClickerEPS = gameState.autoClickers * (gameState.energyPerClick * 10 * multiplier);
-            
-            const now = Date.now();
-            const recentClicks = gameState.clickTimes.filter(time => now - time < 10000);
-            const manualClickRate = recentClicks.length / 10;
-            const manualClickEPS = manualClickRate * gameState.energyPerClick * multiplier;
-
-            return autoClickerEPS + manualClickEPS;
-        }
-
-        function getUpgradeCost(type) {
-            switch(type) {
-                case 'energyPerClick':
-                    return Math.floor(10 * Math.pow(1.4, gameState.energyUpgrades));
-                case 'autoClicker':
-                    return Math.floor(50 * Math.pow(1.6, gameState.autoClickerUpgrades));
-                case 'energyMultiplier':
-                    return Math.floor(100 * Math.pow(1.8, gameState.multiplierUpgrades));
-                case 'efficiency':
-                    return Math.floor(200 * Math.pow(2, gameState.efficiencyUpgrades));
-                default:
-                    return 0;
-            }
-        }
-
-        function getUpgradeEffect(type) {
-            switch(type) {
-                case 'energyPerClick':
-                    return 0.2 * (gameState.energyUpgrades + 1);
-                case 'autoClicker':
-                    return 1;
-                case 'energyMultiplier':
-                    return Math.pow(1.15, gameState.multiplierUpgrades + 1) - Math.pow(1.15, gameState.multiplierUpgrades);
-                case 'efficiency':
-                    return INITIAL_COOLDOWN * (Math.pow(0.95, gameState.efficiencyUpgrades) - Math.pow(0.95, gameState.efficiencyUpgrades + 1));
-                default:
-                    return 0;
-            }
-        }
-
-        function buyUpgrade(type) {
-            const cost = getUpgradeCost(type);
-            if (gameState.energy >= cost) {
-                gameState.energy -= cost;
-                switch(type) {
-                    case 'energyPerClick':
-                        gameState.energyPerClick += getUpgradeEffect('energyPerClick');
-                        gameState.energyUpgrades++;
-                        break;
-                    case 'autoClicker':
-                        gameState.autoClickers++;
-                        gameState.autoClickerUpgrades++;
-                        break;
-                    case 'energyMultiplier':
-                        gameState.multiplierUpgrades++;
-                        break;
-                    case 'efficiency':
-                        gameState.efficiencyUpgrades++;
-                        break;
-                }
-                updateDisplay();
-            }
-        }
-
-        function buyMaxUpgrade(type) {
-            let bought = 0;
-            while (gameState.energy >= getUpgradeCost(type)) {
-                buyUpgrade(type);
-                bought++;
-            }
-            if (bought > 0) {
-                updateDisplay();
-            }
-        }
-
-        function updateButtonAffordability() {
-            updateButtonState('energyPerClick', 'energyPerClickUpgrade');
-            updateButtonState('autoClicker', 'autoClickerUpgrade');
-            updateButtonState('energyMultiplier', 'energyMultiplierUpgrade');
-            updateButtonState('efficiency', 'efficiencyUpgrade');
-        }
-
-        function updateButtonState(upgradeType, buttonId) {
-            const button = document.getElementById(buttonId);
-            const cost = getUpgradeCost(upgradeType);
-            if (gameState.energy >= cost) {
-                button.classList.add('affordable');
-                button.disabled = false;
-            } else {
-                button.classList.remove('affordable');
-                button.disabled = true;
-            }
-        }
-
-        function initiateReset() {
-            resetClickCount++;
-            if (resetClickCount === 1) {
-                document.getElementById('resetConfirm').style.display = 'block';
-            }
-            document.getElementById('resetCount').textContent = 10 - resetClickCount;
-            
-            if (resetClickCount >= 10) {
+        function supercharge() {
+            if (gameState.energy >= 1000000) {
+                const efficiencyBonus = 1 + (upgrades.superchargeEfficiency.quantity * upgrades.superchargeEfficiency.effect);
+                const newPoints = Math.floor((Math.log10(gameState.energy) - 5) * efficiencyBonus);
+                gameState.superchargePoints += newPoints;
+                gameState.statistics.totalSupercharges++;
+                showNotification(`Supercharged! Gained ${formatNumber(newPoints)} Supercharge points.`);
                 resetGame();
-            } else {
-                clearTimeout(resetTimeout);
-                resetTimeout = setTimeout(() => {
-                    resetClickCount = 0;
-                    document.getElementById('resetConfirm').style.display = 'none';
-                }, 3000);
+                updateDisplay();
+                checkAchievements();
             }
         }
 
         function resetGame() {
-            gameState = {
-                energy: 0,
-                energyPerClick: 1,
-                autoClickers: 0,
-                lastClickTime: 0,
-                energyUpgrades: 0,
-                autoClickerUpgrades: 0,
-                multiplierUpgrades: 0,
-                efficiencyUpgrades: 0,
-                clickTimes: [],
-                lastUpdateTime: Date.now()
-            };
-            resetClickCount = 0;
-            document.getElementById('resetConfirm').style.display = 'none';
-            updateDisplay();
-            saveGame();
-        }
-
-        setInterval(() => {
-            const now = Date.now();
-            const deltaTime = (now - gameState.lastUpdateTime) / 1000;
-            gameState.energy += calculateEPS() * deltaTime;
-            gameState.lastUpdateTime = now;
-            updateDisplay();
-        }, 100);
-
-        function saveGame() {
-            localStorage.setItem('energyGame', JSON.stringify(gameState));
-        }
-
-        function loadGame() {
-            const savedGame = localStorage.setItem('energyGame');
-            if (savedGame) {
-                const loadedState = JSON.parse(savedGame);
-                gameState = {
-                    ...gameState, // This spreads the default values
-                    ...loadedState, // This overwrites with saved values
-                    lastUpdateTime: Date.now(),
-                    clickTimes: []
-                };
-                updateDisplay();
+            gameState.energy = 0;
+            gameState.energyPerClick = 1;
+            gameState.energyPerSecond = 0;
+            for (const upgrade of Object.values(upgrades)) {
+                if (upgrade.type !== 'supercharge') {
+                    upgrade.quantity = 0;
+                    upgrade.cost = upgrade.baseCost;
+                }
             }
         }
 
-        loadGame();
-        updateDisplay();
+        function checkAchievements() {
+            for (const [key, achievement] of Object.entries(achievements)) {
+                if (!gameState.achievements[key] && achievement.condition()) {
+                    gameState.achievements[key] = true;
+                    showNotification(`Achievement unlocked: ${achievement.name}`);
+                    updateAchievementsDisplay();
+                }
+            }
+        }
 
-        // Save game every 30 seconds
+        function updateAchievementsDisplay() {
+            const container = document.getElementById('achievementsContainer');
+            container.innerHTML = '';
+            for (const [key, achievement] of Object.entries(achievements)) {
+                const div = document.createElement('div');
+                div.className = `achievement ${gameState.achievements[key] ? 'unlocked' : ''}`;
+                div.textContent = gameState.achievements[key] ? `${achievement.name} - ${achievement.description}` : 'Locked Achievement';
+                container.appendChild(div);
+            }
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.style.opacity = 1;
+            setTimeout(() => {
+                notification.style.opacity = 0;
+            }, 3000);
+        }
+
+        function gameLoop() {
+            const now = Date.now();
+            const delta = now - gameState.lastUpdate;
+            gameState.energy += calculateEnergy(delta);
+            gameState.statistics.totalEnergy += calculateEnergy(delta);
+            gameState.statistics.playTime += delta / 1000;
+            gameState.lastUpdate = now;
+            updateDisplay();
+            checkAchievements();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function initializeGame() {
+            initializeUpgrades();
+            document.getElementById('energizeButton').onclick = energize;
+            document.getElementById('superchargeButton').onclick = supercharge;
+            document.getElementById('resetButton').onclick = () => {
+                if (confirm('Are you sure you want to reset your game? This action cannot be undone.')) {
+                    resetGame();
+                    gameState.superchargePoints = 0;
+                    gameState.statistics = {
+                        totalEnergy: 0,
+                        totalClicks: 0,
+                        totalSupercharges: 0,
+                        playTime: 0
+                    };
+                    gameState.achievements = {};
+                    updateDisplay();
+                    updateAchievementsDisplay();
+                    showNotification('Game has been reset.');
+                }
+            };
+            document.getElementById('exportSaveButton').onclick = exportSave;
+            document.getElementById('importSaveButton').onclick = importSave;
+
+            // Initialize tab switching
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const tabName = button.getAttribute('data-tab');
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    button.classList.add('active');
+                    document.getElementById(`${tabName}Tab`).classList.add('active');
+                });
+            });
+
+            loadGame();
+            updateDisplay();
+            updateAchievementsDisplay();
+            gameLoop();
+        }
+
+        function saveGame() {
+            localStorage.setItem('energyGameSave', JSON.stringify(gameState));
+        }
+
+        function loadGame() {
+            const savedGame = localStorage.getItem('energyGameSave');
+            if (savedGame) {
+                const loadedState = JSON.parse(savedGame);
+                gameState = {
+                    ...gameState,
+                    ...loadedState,
+                    lastUpdate: Date.now()
+                };
+                for (const [key, upgrade] of Object.entries(upgrades)) {
+                    if (gameState.upgrades[key]) {
+                        upgrade.quantity = gameState.upgrades[key].quantity;
+                        upgrade.cost = gameState.upgrades[key].cost;
+                    }
+                }
+                updateDisplay();
+                updateAchievementsDisplay();
+            }
+        }
+
+        function exportSave() {
+            const saveData = btoa(JSON.stringify(gameState));
+            const blob = new Blob([saveData], {type: 'text/plain'});
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = 'energy_game_save.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function importSave() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.txt';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.onload = event => {
+                    try {
+                        const loadedState = JSON.parse(atob(event.target.result));
+                        gameState = {
+                            ...gameState,
+                            ...loadedState,
+                            lastUpdate: Date.now()
+                        };
+                        for (const [key, upgrade] of Object.entries(upgrades)) {
+                            if (gameState.upgrades[key]) {
+                                upgrade.quantity = gameState.upgrades[key].quantity;
+                                upgrade.cost = gameState.upgrades[key].cost;
+                            }
+                        }
+                        updateDisplay();
+                        updateAchievementsDisplay();
+                        showNotification('Game loaded successfully.');
+                    } catch (error) {
+                        showNotification('Error loading game. Invalid save file.');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
+        }
+
+        // Initialize the game when the page loads
+        window.onload = initializeGame;
+
+        // Save the game every 30 seconds
         setInterval(saveGame, 30000);
     </script>
 </body>
